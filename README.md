@@ -1,2 +1,2 @@
 # Android-login
-CityU login android appliction
+CityU login android application
