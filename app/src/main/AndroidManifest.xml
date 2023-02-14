@@ -4,9 +4,11 @@
     package="com.fyp.cityulogin">
 
     <!-- allow the program to connect to paired devices -->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <!-- allow the program to discover and pair bluetooth devices -->
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <!-- allow the program to discover and pair bluetooths devices -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
     <!-- require location permission -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -14,6 +16,9 @@
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
     <!-- if user's API level is 21 (Android 5.0) or higher -->
     <uses-feature android:name="android.hardware.location.gps" />
+
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <application
         android:allowBackup="true"
@@ -37,5 +42,6 @@
             </intent-filter>
         </activity>
     </application>
+
 
 </manifest>
