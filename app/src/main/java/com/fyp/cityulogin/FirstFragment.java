@@ -13,7 +13,6 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.fyp.cityulogin.databinding.FragmentFirstBinding;
 import com.fyp.cityulogin.bluetooth.BluetoothController;
-import com.fyp.cityulogin.utils.BluetoothUUID;
 
 public class FirstFragment extends Fragment {
 

@@ -1,6 +1,6 @@
 package com.fyp.cityulogin.bluetooth;
 
-import static com.fyp.cityulogin.utils.BluetoothUtil.createGattTable;
+import static com.fyp.cityulogin.util.BluetoothUtil.createGattTable;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -11,7 +11,6 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
-import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseSettings;
@@ -27,10 +26,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 
-import com.fyp.cityulogin.utils.BluetoothUUID;
-import com.fyp.cityulogin.utils.BluetoothUtil;
-
-import java.util.UUID;
+import com.fyp.cityulogin.util.BluetoothUUID;
+import com.fyp.cityulogin.util.BluetoothUtil;
 
 public class BluetoothController {
     private Context context;

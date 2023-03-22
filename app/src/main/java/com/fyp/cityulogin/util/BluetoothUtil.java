@@ -1,4 +1,4 @@
-package com.fyp.cityulogin.utils;
+package com.fyp.cityulogin.util;
 
 
 
