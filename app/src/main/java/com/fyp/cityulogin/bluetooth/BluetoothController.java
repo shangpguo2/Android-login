@@ -39,20 +39,19 @@ public class BluetoothController {
 
     private static final String TAG = "BluetoothController - ";
 
-    // Singleton
+    // private constructor and singleton
     public static BluetoothController getInstance() {
         return bluetoothController;
     }
 
-
+    // set context and initialize bluetooth
     public void setContext(@NonNull Context context) {
         this.context = context;
-
-        // initialise manager and adapter
+        // initialise manager
         if (bluetoothManager == null) {
             bluetoothManager = (BluetoothManager) this.context.getSystemService(Context.BLUETOOTH_SERVICE);
         }
-
+        // initialise adapter
         if (bluetoothManager != null && bluetoothAdapter == null) {
             bluetoothAdapter = bluetoothManager.getAdapter();
         }
@@ -61,7 +60,7 @@ public class BluetoothController {
     // initialize bluetooth
     public void init(@NonNull Activity activity, int requestCode) {
         Log.d(TAG, "Start to init");
-
+        // check bluetooth
         if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(activity, "This device does not support BLE", Toast.LENGTH_LONG).show();
             activity.finish();
@@ -73,7 +72,7 @@ public class BluetoothController {
 
         // check adapter
         if (bluetoothAdapter == null) {
-            Toast.makeText(activity, "不支持ble", Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, "This device does not support BLE", Toast.LENGTH_LONG).show();
             activity.finish();
             return;
         }
@@ -126,6 +125,7 @@ public class BluetoothController {
 
             ＊AdvertiseSettings.ADVERTISE_TX_POWER_ULTRA_LOW not detected with Nexus 5
          */
+        // create advertise settings
         AdvertiseSettings advertiseSettings = builder.build();
         if (advertiseSettings == null) {
             Log.e(TAG, "No advertise setting!");
@@ -215,6 +215,7 @@ public class BluetoothController {
     @SuppressLint("MissingPermission")
     public void startGattService(String account, String password) {
         BluetoothGattServerCallback serverCallback = new BluetoothGattServerCallback() {
+            // read request from client and send characteristics data
             @Override
             public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
@@ -229,15 +230,20 @@ public class BluetoothController {
             }
 
         };
+        // if GATT service does not exist, get a new one
         if (bluetoothGattServer == null) {
             bluetoothGattServer = bluetoothManager.openGattServer(this.context, serverCallback);
         }
+        // add GATT table
         bluetoothGattServer.addService(createGattTable(account, password));
     }
 
     // close GATT service
     @SuppressLint("MissingPermission")
     public void closeGattService() {
+        if (bluetoothGattServer == null) {
+            return;
+        }
         bluetoothGattServer.close();
         bluetoothGattServer = null;
     }

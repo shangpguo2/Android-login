@@ -1,44 +1,89 @@
 package com.fyp.cityulogin;
 
+import static com.fyp.cityulogin.util.StoreInfo.getInfo;
+import static com.fyp.cityulogin.util.StoreInfo.storeInfo;
+
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.fyp.cityulogin.bluetooth.BluetoothController;
+import com.fyp.cityulogin.util.StoreInfo;
 
 public class MainActivity extends AppCompatActivity {
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Get an instance of BluetoothController
         BluetoothController bluetoothController = BluetoothController.getInstance();
+        // Set the context of the BluetoothController
         bluetoothController.setContext(this.getApplicationContext());
+        // Initialize the BluetoothController
         bluetoothController.init(this, 999);
 
-        View rootView = findViewById(android.R.id.content);
-        Button startAdv = (Button) rootView.findViewById(R.id.startAdv);
-
+        // Get the start advertising button
+        Button startAdv = findViewById(R.id.startAdv);
+        // Get an instance of SharedPreferences
+        SharedPreferences preferences = getSharedPreferences("userPref", MODE_PRIVATE);
+        // Get the account and password fields
+        EditText accountField = findViewById(R.id.account);
+        EditText passwordField = findViewById(R.id.password);
+        // Get the remember me checkbox
+        CheckBox rememberMe = findViewById(R.id.rememberMe);
+        // Create a new StoreInfo object to call constructor
+        new StoreInfo();
+        // Get the account and password from the SharedPreferences
+        accountField.setText(getInfo("eid", preferences));
+        passwordField.setText(getInfo("pwd", preferences));
+        // Set the click listener for the start advertising button
         startAdv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Get the account and password text
+                String account = String.valueOf((accountField).getText());
+                String password = String.valueOf((passwordField).getText());
+                // Start advertising
                 bluetoothController.startAdvertising();
-                bluetoothController.startGattService(String.valueOf(((EditText) rootView.findViewById(R.id.account)).getText()),
-                        String.valueOf(((EditText) rootView.findViewById(R.id.password)).getText()));
+                // Start GATT service
+                bluetoothController.startGattService(account, password);
+                if (rememberMe.isChecked()) {
+                    // Store the account and password in the SharedPreferences
+                    storeInfo("eid", account, preferences);
+                    storeInfo("pwd", password, preferences);
+                } else {
+                    // Clear the account and password in the SharedPreferences
+                    storeInfo("eid", "", preferences);
+                    storeInfo("pwd", "", preferences);
+                }
             }
         });
-        Button endAdv = (Button) rootView.findViewById(R.id.stopAdv);
+
+        // Get the stop advertising button
+        Button endAdv = findViewById(R.id.stopAdv);
+        // Set the click listener for the stop advertising button
         endAdv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Stop advertising
                 bluetoothController.stopAdvertising();
+                // Stop GATT service
                 bluetoothController.closeGattService();
             }
-
         });
+
     }
+
+
 }

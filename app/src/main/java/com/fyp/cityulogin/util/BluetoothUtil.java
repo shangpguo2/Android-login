@@ -14,10 +14,10 @@ import java.util.UUID;
 public class BluetoothUtil {
     private static final String TAG = "BluetoothUtil.java";
 
-
-
+    // Create the AdvertiseData
     public static AdvertiseData createAdvertiseData(UUID proximityUuid) {
         AdvertiseData.Builder builder = new AdvertiseData.Builder();
+        // include device name
         builder.setIncludeDeviceName(true);
     //        builder.addManufacturerData(0x01AC, new byte[]{0x34, 0x56});
         builder.addServiceUuid(ParcelUuid.fromString(proximityUuid.toString()));
@@ -27,6 +27,7 @@ public class BluetoothUtil {
         return adv;
     }
 
+    // Create the GattTable
     public static BluetoothGattService createGattTable(@NonNull String account, @NonNull String password) {
 //        BluetoothGattDescriptor accountDescriptor =
 //                new BluetoothGattDescriptor(BluetoothUUID.DESC_ACCOUNT, BluetoothGattDescriptor.PERMISSION_WRITE | BluetoothGattDescriptor.PERMISSION_READ);
