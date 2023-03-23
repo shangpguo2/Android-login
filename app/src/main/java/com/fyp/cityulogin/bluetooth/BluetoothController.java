@@ -108,6 +108,7 @@ public class BluetoothController {
 
     // Set config of the advertiser
     public AdvertiseSettings createAdvertiseSettings(boolean connectable, int timeout) {
+        // create advertise settings
         AdvertiseSettings.Builder builder = new AdvertiseSettings.Builder();
         // set advertise mode
         builder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY);
@@ -134,6 +135,7 @@ public class BluetoothController {
 
     // callback function of advertising, including success and failure
     private AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
+        // success
         @Override
         public void onStartSuccess(AdvertiseSettings settingsInEffect) {
             super.onStartSuccess(settingsInEffect);
@@ -144,7 +146,7 @@ public class BluetoothController {
                 Log.d(TAG, "advertiseCallback - onStartSuccess - settingInEffect is null");
             }
         }
-
+        // failure
         @Override
         public void onStartFailure(int errorCode) {
             super.onStartFailure(errorCode);
@@ -192,6 +194,7 @@ public class BluetoothController {
         }
     }
 
+    // function to stop advertising
     @SuppressLint("MissingPermission")
     public void stopAdvertising() {
         // close BluetoothLeAdvertiser
@@ -202,11 +205,13 @@ public class BluetoothController {
 //        if (bluetoothAdapter != null) {
 //            bluetoothAdapter = null;
 //        }
+
+        Toast.makeText(context, "Advertise Stopped", Toast.LENGTH_SHORT).show();
     }
 
 
 
-    // Using GATT
+    // create GATT table and start GATT service
     @SuppressLint("MissingPermission")
     public void startGattService(String account, String password) {
         BluetoothGattServerCallback serverCallback = new BluetoothGattServerCallback() {
@@ -230,6 +235,7 @@ public class BluetoothController {
         bluetoothGattServer.addService(createGattTable(account, password));
     }
 
+    // close GATT service
     @SuppressLint("MissingPermission")
     public void closeGattService() {
         bluetoothGattServer.close();

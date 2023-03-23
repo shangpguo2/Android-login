@@ -3,4 +3,5 @@
     <string name="eid">EID</string>
     <string name="pwd">Password</string>
     <string name="start">Start Advertising</string>
+    <string name="stop">STOP</string>
 </resources>
