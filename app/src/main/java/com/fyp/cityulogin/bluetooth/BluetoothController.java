@@ -22,20 +22,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
 
-import com.fyp.cityulogin.MainActivity;
-import com.fyp.cityulogin.R;
 import com.fyp.cityulogin.util.BluetoothUUID;
 import com.fyp.cityulogin.util.BluetoothUtil;
 
-import java.util.concurrent.CountDownLatch;
 
 public class BluetoothController {
     private Context context;
@@ -138,7 +133,7 @@ public class BluetoothController {
     }
 
     // callback function of advertising, including success and failure
-    private AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
+    private final AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
         // success
         @Override
         public void onStartSuccess(AdvertiseSettings settingsInEffect) {
@@ -252,10 +247,10 @@ public class BluetoothController {
                                     dialog.dismiss();
                                 }
                             });
-                                    AlertDialog dialog = builder.create();
-                                    dialog.show();
-                                }
-                            });
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+                        }
+                    });
 //                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 //                    builder.setTitle("Pair with " + device.getName() + " ?");
 //                    builder.setPositiveButton("Pair", new DialogInterface.OnClickListener() {
@@ -327,31 +322,5 @@ public class BluetoothController {
         }
         bluetoothGattServer.close();
         bluetoothGattServer = null;
-    }
-
-
-    // show pairing dialog for user to check
-    @SuppressLint("MissingPermission")
-    private void showPairingDialog(final BluetoothDevice device) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Pair with " + device.getName() + " ?");
-        builder.setMessage("OK to pair with " + device.getName() + " ");
-        builder.setPositiveButton("Pair", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                allowConnection = true;
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                allowConnection = false;
-                dialog.dismiss();
-            }
-        });
-        builder.setCancelable(false);
-        AlertDialog dialog = builder.create();
-        dialog.show();
-//        dialog.getWindow().getDecorView().bringToFront();
     }
 }

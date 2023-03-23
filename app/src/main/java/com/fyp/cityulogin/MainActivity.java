@@ -1,16 +1,10 @@
 package com.fyp.cityulogin;
 
-import static com.fyp.cityulogin.util.BluetoothUUID.CHAR_EID;
-import static com.fyp.cityulogin.util.BluetoothUUID.CHAR_PASSWORD;
 import static com.fyp.cityulogin.util.StoreInfo.getInfo;
 import static com.fyp.cityulogin.util.StoreInfo.storeInfo;
 
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.bluetooth.BluetoothGatt;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
