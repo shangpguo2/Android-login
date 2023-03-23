@@ -1,5 +1,7 @@
 package com.fyp.cityulogin.bluetooth;
 
+import static com.fyp.cityulogin.util.BluetoothUUID.CHAR_EID;
+import static com.fyp.cityulogin.util.BluetoothUUID.CHAR_PASSWORD;
 import static com.fyp.cityulogin.util.BluetoothUtil.createGattTable;
 
 import android.Manifest;
@@ -16,12 +18,14 @@ import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -36,6 +40,7 @@ public class BluetoothController {
     private BluetoothLeAdvertiser bluetoothAdvertiser;
     private BluetoothGattServer bluetoothGattServer;
     private static final BluetoothController bluetoothController = new BluetoothController();
+    private boolean allowConnection = false;
 
     private static final String TAG = "BluetoothController - ";
 
@@ -219,14 +224,28 @@ public class BluetoothController {
             @Override
             public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
+                // check if the device is allowed to connect
+                if (!allowConnection) {
+                    showPairingDialog(device);
+                    if (!allowConnection) {
+                        bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
+                        return;
+                    }
+                }
                 // send characteristics data when required
-                bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset,
-                        characteristic.getValue());
+                if (characteristic.getUuid().equals(CHAR_EID) || characteristic.getUuid().equals(CHAR_PASSWORD)) {
+                    bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset,
+                            characteristic.getValue());
+                } else {
+                    bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
+                }
+
             }
 
             @Override
             public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
                 super.onConnectionStateChange(device, status, newState);
+                allowConnection = false;
             }
 
         };
@@ -248,4 +267,30 @@ public class BluetoothController {
         bluetoothGattServer = null;
     }
 
+
+    // show pairing dialog for user to check
+    @SuppressLint("MissingPermission")
+    private void showPairingDialog(final BluetoothDevice device) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        builder.setTitle("Pair with " + device.getName() + " ?");
+        builder.setPositiveButton("Pair", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                allowConnection = true;
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                allowConnection = false;
+                dialog.dismiss();
+            }
+        });
+        builder.setCancelable(false);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
 }
