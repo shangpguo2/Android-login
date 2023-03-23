@@ -25,7 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
-
+import com.fyp.cityulogin.MainActivity;
 import com.fyp.cityulogin.util.BluetoothUUID;
 import com.fyp.cityulogin.util.BluetoothUtil;
 
@@ -37,7 +37,7 @@ public class BluetoothController {
     private BluetoothGattServer bluetoothGattServer;
     private static final BluetoothController bluetoothController = new BluetoothController();
 
-    private static final String TAG = "BluetoothController.java";
+    private static final String TAG = "BluetoothController - ";
 
     // Singleton
     public static BluetoothController getInstance() {
@@ -45,8 +45,8 @@ public class BluetoothController {
     }
 
 
-    public void setContext(@NonNull Fragment fragment) {
-        this.context = fragment.getContext();
+    public void setContext(@NonNull Context context) {
+        this.context = context;
 
         // initialise manager and adapter
         if (bluetoothManager == null) {
@@ -135,7 +135,7 @@ public class BluetoothController {
     // callback function of advertising, including success and failure
     private AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
         @Override
-        public void onStartSuccess(android.bluetooth.le.AdvertiseSettings settingsInEffect) {
+        public void onStartSuccess(AdvertiseSettings settingsInEffect) {
             super.onStartSuccess(settingsInEffect);
             Toast.makeText(context, "Advertise Start Success", Toast.LENGTH_SHORT).show();
             if (settingsInEffect != null) {

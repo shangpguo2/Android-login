@@ -1,17 +1,14 @@
 package com.fyp.cityulogin.util;
 
 
-
-import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.le.AdvertiseData;
 import android.os.ParcelUuid;
 import android.util.Log;
-import android.bluetooth.BluetoothGattCharacteristic;
 
 import androidx.annotation.NonNull;
 
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class BluetoothUtil {
