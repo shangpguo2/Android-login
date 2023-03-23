@@ -22,6 +22,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,11 +31,15 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.fyp.cityulogin.MainActivity;
+import com.fyp.cityulogin.R;
 import com.fyp.cityulogin.util.BluetoothUUID;
 import com.fyp.cityulogin.util.BluetoothUtil;
 
+import java.util.concurrent.CountDownLatch;
+
 public class BluetoothController {
     private Context context;
+    private Activity activity;
     private BluetoothManager bluetoothManager;
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeAdvertiser bluetoothAdvertiser;
@@ -43,6 +48,7 @@ public class BluetoothController {
     private boolean allowConnection = false;
 
     private static final String TAG = "BluetoothController - ";
+
 
     // private constructor and singleton
     public static BluetoothController getInstance() {
@@ -64,6 +70,7 @@ public class BluetoothController {
 
     // initialize bluetooth
     public void init(@NonNull Activity activity, int requestCode) {
+        this.activity = activity;
         Log.d(TAG, "Start to init");
         // check bluetooth
         if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -91,18 +98,10 @@ public class BluetoothController {
             return;
         }
 
-        // TO DO
         // to start bluetooth
         if ((bluetoothAdapter == null) || (!bluetoothAdapter.isEnabled())) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return;
             }
             activity.startActivityForResult(enableBtIntent, requestCode);
@@ -226,22 +225,85 @@ public class BluetoothController {
                 super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
                 // check if the device is allowed to connect
                 if (!allowConnection) {
-                    showPairingDialog(device);
-                    if (!allowConnection) {
-                        bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
-                        return;
-                    }
-                }
-                // send characteristics data when required
-                if (characteristic.getUuid().equals(CHAR_EID) || characteristic.getUuid().equals(CHAR_PASSWORD)) {
-                    bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset,
-                            characteristic.getValue());
+                    // because the dialog is not in the main thread, so we need to use runOnUiThread
+                    activity.runOnUiThread(new Runnable() {
+                        // show dialog to ask user to pair
+                        @Override
+                        public void run() {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                            builder.setTitle("Pair with device " + device.getName() + "?");
+                            builder.setPositiveButton("Pair", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    allowConnection = true;
+                                    if (characteristic.getUuid().equals(CHAR_EID) || characteristic.getUuid().equals(CHAR_PASSWORD)) {
+                                        bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset,
+                                                characteristic.getValue());
+                                    } else {
+                                        bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
+                                    }
+                                }
+                            });
+                            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    allowConnection = false;
+                                    bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
+                                    dialog.dismiss();
+                                }
+                            });
+                                    AlertDialog dialog = builder.create();
+                                    dialog.show();
+                                }
+                            });
+//                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+//                    builder.setTitle("Pair with " + device.getName() + " ?");
+//                    builder.setPositiveButton("Pair", new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            allowConnection = true;
+//                            if (characteristic.getUuid().equals(CHAR_EID) || characteristic.getUuid().equals(CHAR_PASSWORD)) {
+//                                bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset,
+//                                        characteristic.getValue());
+//                            } else {
+//                                bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
+//                            }
+//                            latch.countDown();
+//                        }
+//                    });
+//                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            allowConnection = false;
+//                            bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
+//                            latch.countDown();
+//                            dialog.dismiss();
+//                        }
+//                    });
+//                    builder.setCancelable(false);
+//                    AlertDialog dialog = builder.create();
+//                    dialog.show();
+//                    dialog.getWindow().getDecorView().bringToFront();
+//                    try {
+//                        latch.await();
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+                // if the device is allowed to connect
                 } else {
-                    bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
+                    // send response to client when the request is for EID or password
+                    if (characteristic.getUuid().equals(CHAR_EID) || characteristic.getUuid().equals(CHAR_PASSWORD)) {
+                        bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset,
+                                characteristic.getValue());
+                    // reject the request if the request is not for EID or password
+                    } else {
+                        bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
+                    }
                 }
 
             }
 
+            // when connection state changes, set allowConnection to false
             @Override
             public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
                 super.onConnectionStateChange(device, status, newState);
@@ -272,10 +334,8 @@ public class BluetoothController {
     @SuppressLint("MissingPermission")
     private void showPairingDialog(final BluetoothDevice device) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
         builder.setTitle("Pair with " + device.getName() + " ?");
+        builder.setMessage("OK to pair with " + device.getName() + " ");
         builder.setPositiveButton("Pair", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -292,5 +352,6 @@ public class BluetoothController {
         builder.setCancelable(false);
         AlertDialog dialog = builder.create();
         dialog.show();
+//        dialog.getWindow().getDecorView().bringToFront();
     }
 }
