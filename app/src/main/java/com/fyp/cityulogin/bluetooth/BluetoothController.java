@@ -234,8 +234,9 @@ public class BluetoothController {
                                     if (characteristic.getUuid().equals(CHAR_EID) || characteristic.getUuid().equals(CHAR_PASSWORD)) {
                                         bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset,
                                                 characteristic.getValue());
-                                    } else {
-                                        bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
+                                    }
+                                    else {
+                                        bluetoothGattServer.cancelConnection(device);
                                     }
                                 }
                             });
@@ -243,7 +244,8 @@ public class BluetoothController {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     allowConnection = false;
-                                    bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
+                                    bluetoothGattServer.cancelConnection(device);
+//                                    bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, "Connection not allowed".getBytes());
                                     dialog.dismiss();
                                 }
                             });
